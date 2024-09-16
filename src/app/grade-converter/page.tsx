@@ -1,7 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { parseAsInteger, parseAsStringLiteral, useQueryState } from "nuqs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import {
   Form,
   FormControl,
@@ -11,14 +19,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { parseAsStringLiteral, useQueryState } from "nuqs";
-import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 const gradeConvertedFormSchema = z.object({
   minGrade: z.number().int().min(0).default(0),
@@ -28,16 +28,12 @@ const gradeConvertedFormSchema = z.object({
   grade: z.number().int().min(0),
 });
 
-const useGradeConverterForm = () => {
+const useGradeConverterForm = (
+  initialValues: z.infer<typeof gradeConvertedFormSchema>
+) => {
   const form = useForm<z.infer<typeof gradeConvertedFormSchema>>({
     resolver: zodResolver(gradeConvertedFormSchema),
-    defaultValues: {
-      minGrade: 0,
-      maxGrade: 100,
-      minResultGrade: 0,
-      maxResultGrade: 12,
-      grade: 0,
-    },
+    values: initialValues,
   });
 
   return form;
@@ -59,20 +55,7 @@ const mapGrade = (
 };
 
 export default function GradeConverter() {
-  const form = useGradeConverterForm();
-
-  const minGrade = form.watch("minGrade");
-  const maxGrade = form.watch("maxGrade");
-  const minResultGrade = form.watch("minResultGrade");
-  const maxResultGrade = form.watch("maxResultGrade");
-  const grade = form.watch("grade");
-
   const [result, setResult] = useState<number | null>(null);
-
-  // const [view, setView] = useQueryState(
-  //   "view",
-  //   parseAsStringLiteral(["form", "slider"] as const).withDefault("form")
-  // );
 
   const [scale, setScale] = useQueryState(
     "scale",
@@ -87,6 +70,35 @@ export default function GradeConverter() {
       max,
     };
   }, [scale]);
+
+  const [minGrade, setMinGrade] = useQueryState(
+    "minGrade",
+    parseAsInteger.withDefault(globalConfig.min)
+  );
+  const [maxGrade, setMaxGrade] = useQueryState(
+    "maxGrade",
+    parseAsInteger.withDefault(globalConfig.max)
+  );
+  const [minResultGrade, setMinResultGrade] = useQueryState(
+    "minResultGrade",
+    parseAsInteger.withDefault(globalConfig.min)
+  );
+  const [maxResultGrade, setMaxResultGrade] = useQueryState(
+    "maxResultGrade",
+    parseAsInteger.withDefault(globalConfig.max)
+  );
+  const [grade, setGrade] = useQueryState(
+    "grade",
+    parseAsInteger.withDefault(globalConfig.min)
+  );
+
+  const form = useGradeConverterForm({
+    minGrade,
+    maxGrade,
+    minResultGrade,
+    maxResultGrade,
+    grade,
+  });
 
   const submitHandler = form.handleSubmit(
     (data) => {
@@ -108,15 +120,15 @@ export default function GradeConverter() {
   );
 
   useEffect(() => {
-    form.setValue("minGrade", globalConfig.min);
-    form.setValue("maxGrade", globalConfig.max);
+    setMinGrade(globalConfig.min);
+    setMaxGrade(globalConfig.max);
   }, [globalConfig]);
 
   useEffect(() => {
     if (minGrade > grade) {
-      form.setValue("grade", minGrade);
+      setGrade(minGrade);
     } else if (maxGrade < grade) {
-      form.setValue("grade", maxGrade);
+      setGrade(maxGrade);
     }
   });
 
@@ -148,8 +160,8 @@ export default function GradeConverter() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  form.setValue("minResultGrade", globalConfig.min);
-                  form.setValue("maxResultGrade", 10);
+                  setMinResultGrade(globalConfig.min);
+                  setMaxResultGrade(10);
                 }}
               >
                 {globalConfig.min}-10
@@ -157,8 +169,8 @@ export default function GradeConverter() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  form.setValue("minResultGrade", globalConfig.min);
-                  form.setValue("maxResultGrade", 12);
+                  setMinResultGrade(globalConfig.min);
+                  setMaxResultGrade(12);
                 }}
               >
                 {globalConfig.min}-12
@@ -166,8 +178,8 @@ export default function GradeConverter() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  form.setValue("minResultGrade", 2);
-                  form.setValue("maxResultGrade", 10);
+                  setMinResultGrade(2);
+                  setMaxResultGrade(10);
                 }}
               >
                 2-10
@@ -198,7 +210,7 @@ export default function GradeConverter() {
                             defaultValue={[minGrade]}
                             step={1}
                             onValueChange={([newValue]) => {
-                              field.onChange(newValue);
+                              setGrade(newValue);
                             }}
                           />
                           <span>{maxGrade}</span>
@@ -230,7 +242,7 @@ export default function GradeConverter() {
                             max={maxGrade}
                             step={1}
                             onValueChange={([newValue]) => {
-                              field.onChange(newValue);
+                              setMinGrade(newValue);
                             }}
                           />
                           <span>{maxGrade}</span>
@@ -259,7 +271,7 @@ export default function GradeConverter() {
                             max={globalConfig.max}
                             step={1}
                             onValueChange={([newValue]) => {
-                              field.onChange(newValue);
+                              setMaxGrade(newValue);
                             }}
                           />
                           <span>{globalConfig.max}</span>
@@ -288,7 +300,7 @@ export default function GradeConverter() {
                             max={maxResultGrade}
                             step={1}
                             onValueChange={([newValue]) => {
-                              field.onChange(newValue);
+                              setMinResultGrade(newValue);
                             }}
                           />
                           <span>{maxResultGrade}</span>
@@ -317,7 +329,7 @@ export default function GradeConverter() {
                             max={100}
                             step={1}
                             onValueChange={([newValue]) => {
-                              field.onChange(newValue);
+                              setMaxResultGrade(newValue);
                             }}
                           />
                           <span>100</span>
