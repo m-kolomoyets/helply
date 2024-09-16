@@ -347,7 +347,6 @@ export default function GradeConverter() {
                     )}
                   />
                 </div>
-                <Button type="submit">Отримати результат</Button>
               </form>
             </Form>
           </CardContent>
