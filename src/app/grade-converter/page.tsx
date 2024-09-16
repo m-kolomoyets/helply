@@ -112,7 +112,7 @@ export default function GradeConverter() {
     } else if (maxGrade < grade) {
       setGrade(maxGrade);
     }
-  });
+  }, [minGrade, maxGrade, grade, setGrade]);
 
   useDebouncedEffect(
     () => {
