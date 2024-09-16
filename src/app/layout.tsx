@@ -4,6 +4,7 @@ import "./globals.css";
 import Link from "next/link";
 import { CalculatorIcon, HandHelpingIcon } from "lucide-react";
 import NavLink from "@/components/NavLink/NavLink";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "HELPLY",
@@ -49,7 +50,9 @@ export default function RootLayout({
                   Перерахунок балу
                 </NavLink>
               </nav>
-              <div className="grid gap-6">{children}</div>
+              <div className="grid gap-6">
+                <Suspense>{children}</Suspense>
+              </div>
             </div>
           </main>
         </div>
