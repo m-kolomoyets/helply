@@ -73,7 +73,6 @@ export default function GradeConverter() {
   //   "view",
   //   parseAsStringLiteral(["form", "slider"] as const).withDefault("form")
   // );
-  const view = "slider";
 
   const [scale, setScale] = useQueryState(
     "scale",
