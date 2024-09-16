@@ -58,11 +58,11 @@ const mapGrade = (
 export default function GradeConverter() {
   const [scale, setScale] = useQueryState(
     "scale",
-    parseAsStringLiteral(["0_100", "0_50", "0_25"] as const).withDefault("0_50")
+    parseAsStringLiteral(["0_100", "0_50", "0_25"] as const).withDefault("0_25")
   );
 
   const globalConfig = useMemo(() => {
-    const [min, max] = (scale || "0_50").split("_").map(Number);
+    const [min, max] = (scale || "0_25").split("_").map(Number);
 
     return {
       min,
@@ -137,9 +137,9 @@ export default function GradeConverter() {
               <h3>Пресети Проміжку балів</h3>
               <ToggleGroup
                 type="single"
-                value={scale || "0_50"}
+                value={scale || "0_25"}
                 onValueChange={(newValue) => {
-                  setScale((newValue as typeof scale) ?? "0_50");
+                  setScale((newValue as typeof scale) ?? "0_25");
                 }}
               >
                 <ToggleGroupItem value="0_25">0-25</ToggleGroupItem>
@@ -218,10 +218,10 @@ export default function GradeConverter() {
                   />
                 </div>
                 <div>
-                  <Separator />
+                  <Separator className="mb-4" />
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h2 className="text-lg font-semibold">Результат</h2>
+                      <h2 className="text-lg font-medium">Результат</h2>
                       <p className="text-3xl font-bold">{result}</p>
                     </div>
                   </div>
