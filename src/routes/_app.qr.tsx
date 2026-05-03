@@ -38,6 +38,9 @@ async function renderQr(canvas: HTMLCanvasElement, value: string) {
 }
 
 async function copyCanvasToClipboard(canvas: HTMLCanvasElement) {
+  if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+    throw new Error("Clipboard API not supported")
+  }
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob(resolve, "image/png")
   )
@@ -51,9 +54,7 @@ function downloadCanvas(canvas: HTMLCanvasElement) {
   const a = document.createElement("a")
   a.href = url
   a.download = "qr-code.png"
-  document.body.appendChild(a)
   a.click()
-  a.remove()
 }
 
 function QrPage() {
