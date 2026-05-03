@@ -9,50 +9,109 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppQrRouteImport } from './routes/_app.qr'
+import { Route as AppDatesRouteImport } from './routes/_app.dates'
 
-const IndexRoute = IndexRouteImport.update({
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
+} as any)
+const AppQrRoute = AppQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDatesRoute = AppDatesRouteImport.update({
+  id: '/dates',
+  path: '/dates',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/dates': typeof AppDatesRoute
+  '/qr': typeof AppQrRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/dates': typeof AppDatesRoute
+  '/qr': typeof AppQrRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/dates': typeof AppDatesRoute
+  '/_app/qr': typeof AppQrRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/dates' | '/qr'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/dates' | '/qr' | '/'
+  id: '__root__' | '/_app' | '/_app/dates' | '/_app/qr' | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/qr': {
+      id: '/_app/qr'
+      path: '/qr'
+      fullPath: '/qr'
+      preLoaderRoute: typeof AppQrRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dates': {
+      id: '/_app/dates'
+      path: '/dates'
+      fullPath: '/dates'
+      preLoaderRoute: typeof AppDatesRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
+interface AppRouteChildren {
+  AppDatesRoute: typeof AppDatesRoute
+  AppQrRoute: typeof AppQrRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppDatesRoute: AppDatesRoute,
+  AppQrRoute: AppQrRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
